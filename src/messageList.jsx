@@ -2,16 +2,20 @@ import React, { Component } from 'react';
 import Message from './message.jsx'
 
 class MessageList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {allMessages: this.props.messages.messages};
+  }
 
   render() {
 
-  {/*  const messageList = this.state.messages.map(Data => (
-    <messages key={Data.id} data={data} />
-    )) */}
+  const messageList = this.state.allMessages.map(data => (
+    <Message key={data.id} data={data} />
+  ));
 
     return (
       <main className='messages'>
-        <Message />
+       <ul>{messageList}</ul>
       </main>
     );
   }
