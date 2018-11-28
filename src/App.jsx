@@ -34,6 +34,10 @@ class App extends Component {
       this.socket.send(JSON.stringify(message));
     }
 
+    const changeUser = (userName) => {
+      this.setState({ currentUser: userName });
+    }
+
 
 
     return (
@@ -42,7 +46,7 @@ class App extends Component {
           <a href="/" className="navbar-brand">Chatty</a>
         </nav>
         <MessageList messages= {this.state.messages} />
-        <ChatBar currentUser= {this.state.currentUser} addMessage={ addMessage } />
+        <ChatBar currentUser= {this.state.currentUser} addMessage={ addMessage } changeUser= { changeUser } />
       </div>
     );
   }
