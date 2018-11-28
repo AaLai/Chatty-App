@@ -17,9 +17,13 @@ class ChatBar extends Component {
 
 
   onSubmitUser = username => {
-      const user = username.target.value;
-      this.props.changeUser(user);
-    };
+    if (username.target.value !== this.props.currentUser) {
+      if (username.target.value.length !== 0) {
+        const user = username.target.value;
+        this.props.changeUser(user);
+      }
+    }
+  };
 
 
 

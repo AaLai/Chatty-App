@@ -28,14 +28,20 @@ class App extends Component {
 
   render() {
 
-    const addMessage = (message) => {
-      const newMessageState = this.state.messages.concat(message);
-      this.setState({messages: newMessageState });
-      this.socket.send(JSON.stringify(message));
+    const addMessage = (messageContent) => {
+      const content = messageContent;
+      const newMessageState = this.state.messages.concat(messageContent);
+      content.type = "postMessage";
+      // this.setState({messages: newMessageState });
+      this.socket.send(JSON.stringify(content));
     }
 
     const changeUser = (userName) => {
+      const user = {username: userName};
+      user.oldUserName = this.state.currentUser;
+      user.type = "postNotification",
       this.setState({ currentUser: userName });
+      this.socket.send(JSON.stringify(user));
     }
 
 

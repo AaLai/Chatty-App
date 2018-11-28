@@ -27,14 +27,34 @@ wss.on('connection', (client) => {
 
   client.on('message', function incoming(data) {
     const latestMessage = JSON.parse(data);
-    latestMessage.id = uuidTime()
-    messageLog.push(latestMessage);
-    // console.log(`user ${latestMessage.username} said ${latestMessage.content} and ${latestMessage.id}`);
-    const everyoneButSender = clientsLoggedIn.filter(user => user !== client);
+    latestMessage.id = uuidTime();
 
-    everyoneButSender.forEach(user => {
-      user.send(JSON.stringify(latestMessage));
-    })
+    switch(latestMessage.type) {
+
+      case "postMessage":
+        messageLog.push(latestMessage);
+        latestMessage.type = "incomingMessage";
+        console.log(latestMessage);
+        clientsLoggedIn.forEach(user => {
+          user.send(JSON.stringify(latestMessage));
+        })
+        break;
+
+      case "postNotification":
+        latestMessage.type = "incomingNotification";
+        console.log(latestMessage)
+        clientsLoggedIn.forEach(user => {
+          user.send(JSON.stringify(latestMessage));
+        });
+        break;
+
+      // console.log(`user ${latestMessage.username} said ${latestMessage.content} and ${latestMessage.id}`);
+        // const everyoneButSender = clientsLoggedIn.filter(user => user !== client);
+
+      // everyoneButSender.forEach(user => {
+        // user.send(JSON.stringify(latestMessage));
+      // })
+    }
   });
 
 
