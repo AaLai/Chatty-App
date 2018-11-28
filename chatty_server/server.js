@@ -24,6 +24,7 @@ const wss = new SocketServer({ server });
 wss.on('connection', (client) => {
   console.log('Client connected');
     clientsLoggedIn.push(client);
+    let clientUsername = '';
 
   client.on('message', function incoming(data) {
     const latestMessage = JSON.parse(data);
@@ -34,7 +35,6 @@ wss.on('connection', (client) => {
       case "postMessage":
         messageLog.push(latestMessage);
         latestMessage.type = "incomingMessage";
-        console.log(latestMessage);
         clientsLoggedIn.forEach(user => {
           user.send(JSON.stringify(latestMessage));
         })
@@ -42,11 +42,20 @@ wss.on('connection', (client) => {
 
       case "postNotification":
         latestMessage.type = "incomingNotification";
-        console.log(latestMessage)
+        clientUsername = latestMessage.username;
         clientsLoggedIn.forEach(user => {
           user.send(JSON.stringify(latestMessage));
         });
         break;
+
+      case "postLogin":
+        latestMessage.type = "incomingLogin"
+        latestMessage.count = clientsLoggedIn.length;
+        clientsLoggedIn.forEach(user => {
+          user.send(JSON.stringify(latestMessage));
+        })
+        break;
+
 
       // console.log(`user ${latestMessage.username} said ${latestMessage.content} and ${latestMessage.id}`);
         // const everyoneButSender = clientsLoggedIn.filter(user => user !== client);
@@ -63,6 +72,12 @@ wss.on('connection', (client) => {
     console.log('Client disconnected');
     let remainingClients = clientsLoggedIn.filter(element => element !== client);
     clientsLoggedIn = remainingClients
-    console.log(clientsLoggedIn.length);
+    let logout = { type: "incomingLogout",
+                  count: clientsLoggedIn.length,
+               username: clientUsername
+                 }
+    clientsLoggedIn.forEach(user => {
+      user.send(JSON.stringify(logout));
+    })
   });
 });

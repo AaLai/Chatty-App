@@ -21,6 +21,20 @@ class Message extends Component {
           </div>
         )
         break;
+
+      case "incomingLogin":
+        return(
+           <div className="message system">
+            {this.props.data.username} has logged in
+          </div>
+        )
+
+      case "incomingLogout":
+        return(
+           <div className="message system">
+            {this.props.data.username} has logged out
+          </div>
+        )
     }
   }
 }
