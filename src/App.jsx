@@ -17,9 +17,15 @@ class App extends Component {
                     }
                   ]
                }
+  this.socket = new WebSocket("ws://localhost:3001");
   }
 
+
+
   componentDidMount() {
+    this.socket.onopen = function(event) {
+      console.log("WebSocket is open now.");
+    };
     console.log("componentDidMount < App />");
     setTimeout(() => {
       console.log("Simulating incoming message");
@@ -30,6 +36,7 @@ class App extends Component {
       // Calling setState will trigger a call to render() in App and all child components.
       this.setState({messages: messages})
     }, 3000);
+
   }
 
 
@@ -37,8 +44,9 @@ class App extends Component {
   render() {
 
     const addMessage = (message) => {
-      const check = this.state.messages.concat(message);
-      this.setState({messages: check });
+      const newMessageState = this.state.messages.concat(message);
+      this.setState({messages: newMessageState });
+      this.socket.send(JSON.stringify(message));
     }
 
     return (

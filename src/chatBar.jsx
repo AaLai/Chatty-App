@@ -18,7 +18,6 @@ class ChatBar extends Component {
                                   username: this.props.currentUser,
                                    content: messageBody
                               }
-                            console.log(messageObject)
         this.props.addMessage(messageObject);
         evt.target.value = '';
       }
