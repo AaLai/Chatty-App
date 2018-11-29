@@ -5,14 +5,34 @@ const uuidTime = require('uuid/v1');
 
 const messageLog = [];
 let clientsLoggedIn = [];
-const theColorsDuke = ['#00FF00', '#DAA520', '#0000FF', '#FF0000', '#FF00FF', '#000000', '#C0C0C0']
+
+// Image managers for giphy and regular images
+const regImg = /(http(s?):)([/|.|\w|\s|-])*\.(jpg|gif|png)/g;
+const regGiphy = /^\/giphy (\w.+)$/;
+const imageCheck = (content) => {
+  return content.match(regImg);
+}
+
+const giphyCheck = (content) => {
+  return content.match(regGiphy);
+}
+
+// Send to room
+const sendToRoomMembers = (room, message) => {
+  room.forEach(user => {
+    user.send(JSON.stringify(message));
+  });
+}
+
+// Deals with assigning colors to users on login
+const colors = ['#00FF00', '#DAA520', '#0000FF', '#FF0000', '#FF00FF', '#000000', '#C0C0C0']
 let number = 0;
 const colorSelector = () => {
   if (number >= 6) {
-     return number = 0;
-    } else {
-     return number += 1;
-    };
+    return number = 0;
+  } else {
+    return number += 1;
+  };
 }
 
 // Set the port to 3001
@@ -34,12 +54,10 @@ wss.on('connection', (client) => {
   console.log('Client connected');
     clientsLoggedIn.push(client);
     let clientUsername = 'Anon';
-    const finalColor = colorSelector()
-    console.log(finalColor)
     const userColor = {  type: 'color',
-                        color: theColorsDuke[colorSelector()]
-                      }
-    client.send(JSON.stringify(userColor))
+                        color: colors[colorSelector()]
+                      };
+    client.send(JSON.stringify(userColor));
 
 
   client.on('message', function incoming(data) {
@@ -49,27 +67,29 @@ wss.on('connection', (client) => {
     switch(latestMessage.type) {
 
       case "postMessage":
+
+        const image = imageCheck(latestMessage.content);
+        const giphy = giphyCheck(latestMessage.content);
+        if (image) {
+          latestMessage.content = latestMessage.content.replace(image[0], ' ');
+          latestMessage.url = image[0];
+        }
+
         messageLog.push(latestMessage);
         latestMessage.type = "incomingMessage";
-        clientsLoggedIn.forEach(user => {
-          user.send(JSON.stringify(latestMessage));
-        })
+        sendToRoomMembers(clientsLoggedIn, latestMessage);
         break;
 
       case "postNotification":
         latestMessage.type = "incomingNotification";
         clientUsername = latestMessage.username;
-        clientsLoggedIn.forEach(user => {
-          user.send(JSON.stringify(latestMessage));
-        });
+        sendToRoomMembers(clientsLoggedIn, latestMessage);
         break;
 
       case "postLogin":
         latestMessage.type = "incomingLogin"
         latestMessage.count = clientsLoggedIn.length;
-        clientsLoggedIn.forEach(user => {
-          user.send(JSON.stringify(latestMessage));
-        })
+        sendToRoomMembers(clientsLoggedIn, latestMessage);
         break;
 
 
@@ -83,7 +103,9 @@ wss.on('connection', (client) => {
   });
 
 
-  // Set up a callback for when a client closes the socket. This usually means they closed their browser.
+  // Set up a callback for when a client closes the socket.
+  // Also sends a logout message to remaining users along with
+  // updated users logged in count
   client.on('close', () => {
     console.log('Client disconnected');
     let remainingClients = clientsLoggedIn.filter(element => element !== client);
@@ -92,8 +114,6 @@ wss.on('connection', (client) => {
                   count: clientsLoggedIn.length,
                username: clientUsername
                  }
-    clientsLoggedIn.forEach(user => {
-      user.send(JSON.stringify(logout));
-    })
+    sendToRoomMembers(clientsLoggedIn, logout);
   });
 });

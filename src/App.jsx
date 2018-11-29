@@ -13,8 +13,6 @@ class App extends Component {
   this.socket = new WebSocket("ws://localhost:3001");
   }
 
-
-
   componentDidMount() {
     this.socket.onopen = (event) => {
       console.log("WebSocket is open now.");
@@ -25,12 +23,19 @@ class App extends Component {
       console.log(login);
     };
 
+    const scrollToBottom = () => {
+     this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
+
+
     this.socket.onmessage = (newMessage) => {
       const fromServerMessage = (JSON.parse(newMessage.data));
       if (fromServerMessage.type === "color") {
         console.log(fromServerMessage.color)
         this.setState({color: fromServerMessage.color})
+
       } else {
+
         switch(fromServerMessage.type) {
 
           case "incomingLogin":
@@ -43,6 +48,7 @@ class App extends Component {
         }
         const convertedServerMessage = this.state.messages.concat(fromServerMessage);
         this.setState({messages: convertedServerMessage });
+        scrollToBottom();
       }
     }
   }
@@ -75,7 +81,12 @@ class App extends Component {
           <a href="/" className="navbar-brand">Chatty</a>
           <div className="navbar-count">{this.state.usersCount} users on </div>
         </nav>
-        <MessageList messages= {this.state.messages} />
+        <div>
+          <MessageList messages= {this.state.messages} />
+          <div style={{ float:"left", clear: "both" }}
+             ref={(el) => { this.messagesEnd = el; }}>
+          </div>
+        </div>
         <ChatBar currentUser= {this.state.currentUser} addMessage={ addMessage } changeUser= { changeUser } />
       </div>
     );
