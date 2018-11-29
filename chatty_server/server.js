@@ -5,6 +5,15 @@ const uuidTime = require('uuid/v1');
 
 const messageLog = [];
 let clientsLoggedIn = [];
+const theColorsDuke = ['#00FF00', '#DAA520', '#0000FF', '#FF0000', '#FF00FF', '#000000', '#C0C0C0']
+let number = 0;
+const colorSelector = () => {
+  if (number >= 6) {
+     return number = 0;
+    } else {
+     return number += 1;
+    };
+}
 
 // Set the port to 3001
 const PORT = 3001;
@@ -24,7 +33,14 @@ const wss = new SocketServer({ server });
 wss.on('connection', (client) => {
   console.log('Client connected');
     clientsLoggedIn.push(client);
-    let clientUsername = '';
+    let clientUsername = 'Anon';
+    const finalColor = colorSelector()
+    console.log(finalColor)
+    const userColor = {  type: 'color',
+                        color: theColorsDuke[colorSelector()]
+                      }
+    client.send(JSON.stringify(userColor))
+
 
   client.on('message', function incoming(data) {
     const latestMessage = JSON.parse(data);

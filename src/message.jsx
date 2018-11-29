@@ -8,7 +8,7 @@ class Message extends Component {
       case "incomingMessage":
         return(
           <div className="message">
-          <span className="message-username">{this.props.data.username}</span>
+          <span className="message-username" style={{color: this.props.data.color}}>{this.props.data.username}</span>
           <span className="message-content">{this.props.data.content}</span>
         </div>
         )

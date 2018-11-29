@@ -5,9 +5,10 @@ import ChatBar from './chatBar.jsx'
 class App extends Component {
   constructor(props){
   super();
-  this.state = {currentUser: 'bob',
+  this.state = {currentUser: 'Anon',
                    messages: [],
-                 usersCount: 0
+                 usersCount: 0,
+                      color: ''
                };
   this.socket = new WebSocket("ws://localhost:3001");
   }
@@ -25,18 +26,25 @@ class App extends Component {
     };
 
     this.socket.onmessage = (newMessage) => {
-      const test = (JSON.parse(newMessage.data))
-      if (test.type === "incomingLogin") {
-        this.setState({usersCount: test.count});
-      }
-      if (test.type === "incomingLogout") {
-        this.setState({usersCount: test.count});
-      }
-      const convertedServerMessage = this.state.messages.concat(test);
-      console.log(JSON.parse(newMessage.data));
-      this.setState({messages: convertedServerMessage });
-    }
+      const fromServerMessage = (JSON.parse(newMessage.data));
+      if (fromServerMessage.type === "color") {
+        console.log(fromServerMessage.color)
+        this.setState({color: fromServerMessage.color})
+      } else {
+        switch(fromServerMessage.type) {
 
+          case "incomingLogin":
+            this.setState({usersCount: fromServerMessage.count});
+            break;
+
+          case "incomingLogout":
+            this.setState({usersCount: fromServerMessage.count});
+            break;
+        }
+        const convertedServerMessage = this.state.messages.concat(fromServerMessage);
+        this.setState({messages: convertedServerMessage });
+      }
+    }
   }
 
 
@@ -46,6 +54,7 @@ class App extends Component {
       const content = messageContent;
       const newMessageState = this.state.messages.concat(messageContent);
       content.type = "postMessage";
+      content.color = this.state.color;
       // this.setState({messages: newMessageState });
       this.socket.send(JSON.stringify(content));
     }
