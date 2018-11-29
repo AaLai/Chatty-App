@@ -27,6 +27,22 @@ class Message extends Component {
         }
         break;
 
+      case "incomingRoom":
+        return (
+          <div className="message system">
+            {this.props.data.currentUser} moved on!
+          </div>
+        );
+        break;
+
+      case "changeRoomState":
+        return (
+          <div className="message system">
+            {this.props.data.currentUser} has moved to {this.props.data.roomname}!
+          </div>
+        );
+        break;
+
       case "incomingNotification":
         return (
           <div className="message system">

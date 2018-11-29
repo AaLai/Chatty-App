@@ -8,7 +8,8 @@ class App extends Component {
   this.state = {currentUser: 'Anon',
                    messages: [],
                  usersCount: 0,
-                      color: ''
+                      color: '',
+                   roomname: "The Main Stay"
                };
   this.socket = new WebSocket("ws://localhost:3001");
   }
@@ -45,6 +46,17 @@ class App extends Component {
           case "incomingLogout":
             this.setState({usersCount: fromServerMessage.count});
             break;
+
+          case "incomingRoom":
+            this.setState({usersCount: fromServerMessage.count})
+            console.log(fromServerMessage)
+            break;
+
+          case "changeRoomState":
+            this.setState({usersCount: fromServerMessage.count,
+                             roomname: fromServerMessage.roomname})
+            console.log(fromServerMessage)
+            break;
         }
         const convertedServerMessage = this.state.messages.concat(fromServerMessage);
         this.setState({messages: convertedServerMessage });
@@ -52,6 +64,7 @@ class App extends Component {
       }
     }
   }
+
 
 
   render() {
@@ -73,13 +86,21 @@ class App extends Component {
       this.socket.send(JSON.stringify(user));
     }
 
+    const changeRoom = (roomnumber) => {
+      const rooms = { type: 'Roomchange',
+                      room: roomnumber.target.value,
+               currentUser: this.state.currentUser
+                    }
+      this.socket.send(JSON.stringify(rooms))
+    };
+
 
 
     return (
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
-          <div className="navbar-count">{this.state.usersCount} users on </div>
+          <div className="navbar-count">{this.state.usersCount} users on {this.state.roomname}</div>
         </nav>
         <div>
           <MessageList messages= {this.state.messages} />
@@ -88,6 +109,7 @@ class App extends Component {
           </div>
         </div>
         <ChatBar currentUser= {this.state.currentUser} addMessage={ addMessage } changeUser= { changeUser } />
+        <button onClick = {changeRoom}> pressme! </button>
       </div>
     );
   }

@@ -3,8 +3,19 @@ const express = require('express');
 const SocketServer = require('ws').Server;
 const uuidTime = require('uuid/v1');
 
-const messageLog = [];
-let clientsLoggedIn = [];
+let rooms = { '0': {
+                     users: [],
+                      name: "The Main Stay",
+                  messages: []
+                   },
+              '1': {
+                     users: [],
+                      name: "room 2",
+                  messages: []
+                   }
+            }
+
+
 
 // Image managers for giphy and regular images
 const regImg = /(http(s?):)([/|.|\w|\s|-])*\.(jpg|gif|png)/g;
@@ -52,8 +63,9 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 wss.on('connection', (client) => {
   console.log('Client connected');
-    clientsLoggedIn.push(client);
+    rooms[0].users.push(client);
     let clientUsername = 'Anon';
+    let clientRoom = '0';
     const userColor = {  type: 'color',
                         color: colors[colorSelector()]
                       };
@@ -75,26 +87,75 @@ wss.on('connection', (client) => {
           latestMessage.url = image[0];
         }
 
-        messageLog.push(latestMessage);
+        rooms[0].messages.push(latestMessage);
         latestMessage.type = "incomingMessage";
-        sendToRoomMembers(clientsLoggedIn, latestMessage);
+        sendToRoomMembers(rooms[clientRoom].users, latestMessage);
         break;
 
       case "postNotification":
         latestMessage.type = "incomingNotification";
         clientUsername = latestMessage.username;
-        sendToRoomMembers(clientsLoggedIn, latestMessage);
+        sendToRoomMembers(rooms[clientRoom].users, latestMessage);
         break;
 
       case "postLogin":
         latestMessage.type = "incomingLogin"
-        latestMessage.count = clientsLoggedIn.length;
-        sendToRoomMembers(clientsLoggedIn, latestMessage);
+        latestMessage.count = rooms[clientRoom].users.length;
+        sendToRoomMembers(rooms[clientRoom].users, latestMessage);
         break;
+
+      case "Roomchange":
+        let clientRoomObject = Object.assign({}, latestMessage)
+        clientRoomObject.type = "changeRoomState"
+        latestMessage.type = "incomingRoom"
+          if (clientRoom === '0') {
+
+            let remainingClients = rooms[0].users.filter(element => element !== client);
+            rooms[0].users = remainingClients
+            rooms[1].users.push(client);
+            clientRoomObject.count = rooms[1].users.length;
+            clientRoomObject.roomname = rooms[1].name;
+            clientRoom = '1';
+            latestMessage.count = rooms[0].users.length;
+
+
+            if (rooms[0].users.length) {
+              sendToRoomMembers(rooms[0].users, latestMessage);
+            }
+            if (rooms[1].users.length) {
+              latestMessage.count = rooms[1].users.length;
+              sendToRoomMembers(rooms[1].users, latestMessage)
+            }
+
+            client.send(JSON.stringify(clientRoomObject));
+
+
+
+            break;
+
+          } else if (clientRoom === '1') {
+              let remainingClients = rooms[1].users.filter(element => element !== client);
+              rooms[1].users = remainingClients
+              rooms[0].users.push(client);
+              clientRoomObject.count = rooms[0].users.length;
+              clientRoomObject.roomname = rooms[0].name;
+              clientRoom = '0';
+              latestMessage.count = rooms[1].users.length;
+              client.send(JSON.stringify(clientRoomObject));
+              if (rooms[1].users.length) {
+                sendToRoomMembers(rooms[1].users, latestMessage);
+              }
+              if (rooms[0].users.length) {
+                latestMessage.count = rooms[0].users.length;
+                sendToRoomMembers(rooms[0].users, latestMessage)
+              }
+
+            break;
+          }
 
 
       // console.log(`user ${latestMessage.username} said ${latestMessage.content} and ${latestMessage.id}`);
-        // const everyoneButSender = clientsLoggedIn.filter(user => user !== client);
+        // const everyoneButSender = rooms[0].users.filter(user => user !== client);
 
       // everyoneButSender.forEach(user => {
         // user.send(JSON.stringify(latestMessage));
@@ -108,12 +169,14 @@ wss.on('connection', (client) => {
   // updated users logged in count
   client.on('close', () => {
     console.log('Client disconnected');
-    let remainingClients = clientsLoggedIn.filter(element => element !== client);
-    clientsLoggedIn = remainingClients
+    let remainingClients = rooms[clientRoom].users.filter(element => element !== client);
+    rooms[0].users = remainingClients
     let logout = { type: "incomingLogout",
-                  count: clientsLoggedIn.length,
+                  count: rooms[clientRoom].users.length,
                username: clientUsername
                  }
-    sendToRoomMembers(clientsLoggedIn, logout);
+    if (rooms[clientRoom.length]) {
+      sendToRoomMembers(rooms[clientRoom].users, logout);
+    }
   });
 });
