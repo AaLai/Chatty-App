@@ -5,23 +5,25 @@ import React, { Component } from 'react';
 class Message extends Component {
 
   render() {
-    switch(this.props.data.type) {
+    switch(this.props.messageData.type) {
 
       case "incomingMessage":
 
-        if (this.props.data.url) {
+        if (this.props.messageData.url) {
           return (
             <div className="message">
-              <span className="message-username" style={{color: this.props.data.color}}>{this.props.data.username}</span>
-              <span className="message-content">{this.props.data.content}</span>
-              <img src={this.props.data.url}/>
+              <span className="message-username" style={{color: this.props.messageData.color}}>{this.props.messageData.username}</span>
+              <span className="message-content">{this.props.messageData.content}</span>
+              <img src={this.props.messageData.url}/>
             </div>
           );
+
         } else {
+
           return (
             <div className="message">
-              <span className="message-username" style={{color: this.props.data.color}}>{this.props.data.username}</span>
-              <span className="message-content">{this.props.data.content}</span>
+              <span className="message-username" style={{color: this.props.messageData.color}}>{this.props.messageData.username}</span>
+              <span className="message-content">{this.props.messageData.content}</span>
             </div>
           );
         }
@@ -30,7 +32,15 @@ class Message extends Component {
       case "incomingRoom":
         return (
           <div className="message system">
-            {this.props.data.currentUser} moved on!
+            {this.props.messageData.currentUser} has joined!
+          </div>
+        );
+        break;
+
+      case "leavingRoom":
+        return (
+          <div className="message system">
+            {this.props.messageData.currentUser} moved on!
           </div>
         );
         break;
@@ -38,7 +48,7 @@ class Message extends Component {
       case "changeRoomState":
         return (
           <div className="message system">
-            {this.props.data.currentUser} has moved to {this.props.data.roomname}!
+            You have moved to {this.props.messageData.roomName}!
           </div>
         );
         break;
@@ -46,7 +56,7 @@ class Message extends Component {
       case "incomingNotification":
         return (
           <div className="message system">
-            {this.props.data.oldUserName} has changed their name to {this.props.data.username}
+            {this.props.messageData.oldUserName} has changed their name to {this.props.messageData.username}
           </div>
         );
         break;
@@ -54,14 +64,14 @@ class Message extends Component {
       case "incomingLogin":
         return (
            <div className="message system">
-            {this.props.data.username} has logged in
+            {this.props.messageData.username} has logged in
           </div>
         );
 
       case "incomingLogout":
         return (
            <div className="message system">
-            {this.props.data.username} has logged out
+            {this.props.messageData.username} has logged out
           </div>
         );
     };

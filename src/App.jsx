@@ -9,7 +9,7 @@ class App extends Component {
                    messages: [],
                  usersCount: 0,
                       color: '',
-                   roomname: "The Main Stay"
+                   roomName: "The Main Stay"
                };
   this.socket = new WebSocket("ws://localhost:3001");
   }
@@ -39,22 +39,13 @@ class App extends Component {
 
         switch(fromServerMessage.type) {
 
-          case "incomingLogin":
+          case ("incomingLogin" || "incomingLogout" || "leavingRoom" || "incomingRoom"):
             this.setState({usersCount: fromServerMessage.count});
-            break;
-
-          case "incomingLogout":
-            this.setState({usersCount: fromServerMessage.count});
-            break;
-
-          case "incomingRoom":
-            this.setState({usersCount: fromServerMessage.count})
-            console.log(fromServerMessage)
             break;
 
           case "changeRoomState":
             this.setState({usersCount: fromServerMessage.count,
-                             roomname: fromServerMessage.roomname})
+                             roomName: fromServerMessage.roomName})
             console.log(fromServerMessage)
             break;
         }
@@ -87,8 +78,7 @@ class App extends Component {
     }
 
     const changeRoom = (roomnumber) => {
-      const rooms = { type: 'Roomchange',
-                      room: roomnumber.target.value,
+      const rooms = { type: 'roomChange',
                currentUser: this.state.currentUser
                     }
       this.socket.send(JSON.stringify(rooms))
@@ -100,7 +90,7 @@ class App extends Component {
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
-          <div className="navbar-count">{this.state.usersCount} users on {this.state.roomname}</div>
+          <div className="navbar-count">{this.state.usersCount} users on {this.state.roomName}</div>
         </nav>
         <div>
           <MessageList messages= {this.state.messages} />
