@@ -1,41 +1,41 @@
 import React, { Component } from 'react';
 
+
+// Renders chatbar with user name and message entries
 class ChatBar extends Component {
 
-
-
-  onSubmitContent = message => {
+  submitMessage = (message) => {
     if (message.keyCode === 13) {
       const messageBody = message.target.value;
-      const messageObject = {   username: this.props.currentUser,
-                                 content: messageBody
+      const messageObject = { username: this.props.currentUser,
+                               content: messageBody
                             }
       this.props.addMessage(messageObject);
       message.target.value = '';
-      }
     };
+  };
 
-
-  onSubmitUser = username => {
+  submitUser = (username) => {
     if (username.target.value !== this.props.currentUser) {
       if (username.target.value.length !== 0) {
         const user = username.target.value;
         this.props.changeUser(user);
-      }
-    }
+      };
+    };
   };
-
 
 
   render() {
 
     return(
+
       <footer className="chatbar">
-          <input className="chatbar-username" onBlur = {this.onSubmitUser} defaultValue= {this.props.currentUser} />
-          <input className="chatbar-message" onKeyUp = {this.onSubmitContent} name="message" placeholder="Type a message and hit ENTER" />
+          <input className="chatbar-username" onBlur = {this.submitUser} defaultValue= {this.props.currentUser} />
+          <input className="chatbar-message" onKeyUp = {this.submitMessage} name="message" placeholder="Type a message and hit ENTER" />
       </footer>
-    )
-  }
-}
+
+    );
+  };
+};
 
 export default ChatBar;

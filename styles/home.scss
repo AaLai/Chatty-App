@@ -3,7 +3,7 @@ body {
   color: black;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  margin: 70px 0;	
+  margin: 70px 0;
 }
 
 .chatbar {
@@ -61,6 +61,13 @@ body {
   font-weight: 700;
 }
 
+.message-image {
+  height: 25%;
+  width: 25%;
+  padding-right: 65%;
+  padding-top: 0.5%;
+}
+
 .navbar {
   background: tomato;
   border-bottom: 1px solid black;
@@ -94,3 +101,12 @@ body {
   padding: 0 10px;
   text-decoration: none;
 }
+
+.changeRoomButton {
+  display: block;
+  float: right;
+  font-size: 15px;
+  line-height: 57px;
+  padding: 0 10px;
+  border-radius: 10px;
+ }

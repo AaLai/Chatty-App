@@ -1,45 +1,39 @@
-React Boilerplate
-=====================
+# Chatty App
 
-A minimal and light dev environment for ReactJS.
+A simple client side SPA Slack clone built with ReactJS.
+Users are about to chat with each other, change their names, post pictures and change chat rooms
 
-### Usage
 
-Clone the boilerplate and create your own git repo.
+## Final Product ver 1.1.0
+- ver 1.1.0
+  - Simple chatroom support added
+- ver 1.0.0
+  - Basic chatty app completed
 
-```
-git clone git@github.com:lighthouse-labs/react-simple-boilerplate.git
-cd react-simple-boilerplate
-git remote rm origin
-git remote add origin [YOUR NEW REPOSITORY]
-# Manually update your package.json file
-```
+!["Chatty app base interface"](https://github.com/AaLai/tweeter/blob/master/public/images/NewTweet.png?raw=true)
+!["Example of room functionality"](https://github.com/AaLai/tweeter/blob/master/public/images/TweetDisplay.png?raw=true)
 
-Install the dependencies and start the server.
+## Dependencies
 
-```
-npm install
-npm start
-open http://localhost:3000
-```
+- Node.js
+- Webpack
+- [babel-loader](https://github.com/babel/babel-loader)
+- [webpack-dev-server](https://github.com/webpack/webpack-dev-server)
 
-### Static Files
+### - Chatty
+- React
+- React-dom
 
-You can store static files like images, fonts, etc in the `build` folder.
+### - Chatty Server
+- Express
+- Uuid
+- Node Web Socket
 
-For example, if you copy a file called my_image.png into the build folder you can access it using `http://localhost:3000/build/my_image.png`.
+## Getting started
 
-### Linting
+- Install all dependencies (using the 'npm install' command in BOTH chatty and chatty_server).
+- Run the Chatty Server by going into the chatty_server folder and using the 'npm start' command.
+- Run the development web server for Chatty using the 'npm start' command in the main chatty folder.
+- open http://localhost:3000
 
-This boilerplate project includes React ESLint configuration.
 
-```
-npm run lint
-```
-
-### Dependencies
-
-* React
-* Webpack
-* [babel-loader](https://github.com/babel/babel-loader)
-* [webpack-dev-server](https://github.com/webpack/webpack-dev-server)

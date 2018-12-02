@@ -1,51 +1,76 @@
-
+// Websocket server requires
 const express = require('express');
 const SocketServer = require('ws').Server;
 const uuidTime = require('uuid/v1');
 
-let rooms = { '0': {
-                     users: [],
-                      name: "The House Of Cards",
-                  messages: []
+
+// Serverside variables and functions for chatroom functionality
+let rooms = { '0': {    users: [],
+                         name: "The Labs",
+                     messages: []
                    },
-              '1': {
-                     users: [],
-                      name: "The Great Outdoors",
-                  messages: []
+              '1': {    users: [],
+                         name: "The Great Outdoors",
+                     messages: []
                    }
-            }
+            };
 
-
-
-// Image managers for giphy and regular images
-const regImg = /(http(s?):)([/|.|\w|\s|-])*\.(jpg|gif|png)/g;
-const regGiphy = /^\/giphy (\w.+)$/;
-const imageCheck = (content) => {
-  return content.match(regImg);
-}
-
-const giphyCheck = (content) => {
-  return content.match(regGiphy);
-}
-
-// Send Functions
 const sendToRoomMembers = (room, message) => {
   room.forEach(user => {
     user.send(JSON.stringify(message));
   });
-}
+};
+
+const roomChanger = (sourceRoom, client, changeRoomFN, parsedMessage) => {
+  let clientChangedRoom = Object.assign({}, parsedMessage);
+  let userJoiningNotification = Object.assign({}, parsedMessage);
+  let userLeavingNotification = Object.assign({}, parsedMessage);
+  const destinationRoom = (sourceRoom === '1') ? '0' : '1';
+  clientChangedRoom.type = "changeRoomState"
+  userJoiningNotification.type = "incomingRoom"
+  userLeavingNotification.type = "leavingRoom"
+
+  let remainingClients = rooms[sourceRoom].users.filter(user => user !== client);
+  rooms[sourceRoom].users = remainingClients;
+  rooms[destinationRoom].users.push(client);
+  clientChangedRoom.count = rooms[destinationRoom].users.length;
+  clientChangedRoom.roomName = rooms[destinationRoom].name;
+  changeRoomFN(destinationRoom);
+
+  if (rooms[sourceRoom].users.length) {
+    userLeavingNotification.count = rooms[sourceRoom].users.length;
+    sendToRoomMembers(rooms[sourceRoom].users, userLeavingNotification);
+  }
+
+  if (rooms[destinationRoom].users.length) {
+    userJoiningNotification.count = rooms[destinationRoom].users.length;
+    const everyoneButSender = rooms[destinationRoom].users.filter(user => user !== client);
+    everyoneButSender.forEach(user => {
+      user.send(JSON.stringify(userJoiningNotification));
+    });
+  };
+
+  client.send(JSON.stringify(clientChangedRoom));
+};
+
+// Image functionality and color assignment
+const regexImage = /(http(s?):)([/|.|\w|\s|-])*\.(jpg|gif|png)/g;
+const imageCheck = (content) => {
+  return content.match(regexImage);
+};
 
 
-// Deals with assigning colors to users on login
 const colors = ['#00FF00', '#DAA520', '#0000FF', '#FF0000', '#FF00FF', '#000000', '#C0C0C0']
 let number = 0;
 const colorSelector = () => {
   if (number >= 6) {
     return number = 0;
-  } else {
+  }
+  else {
     return number += 1;
   };
-}
+};
+
 
 // Set the port to 3001
 const PORT = 3001;
@@ -59,9 +84,8 @@ const server = express()
 // Create the WebSockets server
 const wss = new SocketServer({ server });
 
-// Set up a callback that will run when a client connects to the server
-// When a client connects they are assigned a socket, represented by
-// the ws parameter in the callback.
+
+// Opens socket connection to clients and assign colours
 wss.on('connection', (client) => {
   console.log('Client connected');
     rooms[0].users.push(client);
@@ -73,23 +97,20 @@ wss.on('connection', (client) => {
     client.send(JSON.stringify(userColor));
 
 
+// Message handler based on incoming message type
   client.on('message', function incoming(message) {
     const parsedMessage = JSON.parse(message);
+    parsedMessage.id = uuidTime();
 
     switch(parsedMessage.type) {
 
       case "postMessage":
-
-        let newMessage = Object.assign({}, parsedMessage)
-        newMessage.id = uuidTime();
+        let newMessage = Object.assign({}, parsedMessage);
         const image = imageCheck(newMessage.content);
-        const giphy = giphyCheck(newMessage.content);
         if (image) {
-          newMessage.content = newMessage.content.replace(image[0], ' ');
           newMessage.url = image[0];
-        }
-
-        rooms[0].messages.push(newMessage);
+        };
+        rooms[clientRoom].messages.push(newMessage);
         newMessage.type = "incomingMessage";
         sendToRoomMembers(rooms[clientRoom].users, newMessage);
         break;
@@ -102,86 +123,31 @@ wss.on('connection', (client) => {
         break;
 
       case "postLogin":
-        let newLogin = Object.assign({}, parsedMessage)
-        newLogin.type = "incomingLogin"
+        let newLogin = Object.assign({}, parsedMessage);
+        newLogin.type = "incomingLogin";
         newLogin.count = rooms[clientRoom].users.length;
         sendToRoomMembers(rooms[clientRoom].users, newLogin);
         break;
 
       case "roomChange":
-        let clientChangedRoom = Object.assign({}, parsedMessage);
-        let userJoiningNotification = Object.assign({}, parsedMessage);
-        let userLeavingNotification = parsedMessage;
-        clientChangedRoom.type = "changeRoomState"
-        userJoiningNotification.type = "incomingRoom"
-        userLeavingNotification.type = "leavingRoom"
+        roomChanger(clientRoom, client, ((room)=> {clientRoom = room}), parsedMessage);
+        break;
 
-        if (clientRoom === '0') {
-          let remainingClients = rooms[0].users.filter(element => element !== client);
-          rooms[0].users = remainingClients
-          rooms[1].users.push(client);
-          clientChangedRoom.count = rooms[1].users.length;
-          clientChangedRoom.roomName = rooms[1].name;
-          clientRoom = '1';
-
-          if (rooms[0].users.length) {
-            userLeavingNotification.count = rooms[0].users.length;
-            sendToRoomMembers(rooms[0].users, userLeavingNotification);
-          }
-
-          if (rooms[1].users.length) {
-            userJoiningNotification.count = rooms[1].users.length;
-            const everyoneButSender = rooms[1].users.filter(user => user !== client);
-            everyoneButSender.forEach(user => {
-              user.send(JSON.stringify(userJoiningNotification));
-            })
-          }
-
-          client.send(JSON.stringify(clientChangedRoom));
-          break;
-
-          } else if (clientRoom === '1') {
-            let remainingClients = rooms[1].users.filter(element => element !== client);
-            rooms[1].users = remainingClients
-            rooms[0].users.push(client);
-            clientChangedRoom.count = rooms[0].users.length;
-            clientChangedRoom.roomName = rooms[0].name;
-            clientRoom = '0';
-
-            if (rooms[1].users.length) {
-              userLeavingNotification.count = rooms[1].users.length;
-              sendToRoomMembers(rooms[1].users, userLeavingNotification);
-            }
-
-            if (rooms[0].users.length) {
-              userJoiningNotification.count = rooms[0].users.length;
-              const everyoneButSender = rooms[0].users.filter(user => user !== client);
-              everyoneButSender.forEach(user => {
-                user.send(JSON.stringify(userJoiningNotification));
-              })
-            }
-
-            client.send(JSON.stringify(clientChangedRoom));
-            break;
-          }
-
-    }
+    };
   });
 
 
-  // Set up a callback for when a client closes the socket.
-  // Also sends a logout message to remaining users along with
-  // updated users logged in count
+// Updates remaining user counts and sends a logout message
   client.on('close', () => {
     console.log('Client disconnected');
     let remainingClients = rooms[clientRoom].users.filter(element => element !== client);
-    rooms[clientRoom].users = remainingClients
+    rooms[clientRoom].users = remainingClients;
     let logout = { type: "incomingLogout",
                   count: rooms[clientRoom].users.length,
                username: clientUsername
-                 }
-    if (rooms[clientRoom.length]) {
+                 };
+    if (rooms[clientRoom].length) {
       sendToRoomMembers(rooms[clientRoom].users, logout);
-    }
+    };
   });
 });

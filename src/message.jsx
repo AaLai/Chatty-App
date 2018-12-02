@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-// changes message display format and contents based on message type from props
+// Changes message render format and contents based on message type from props
 
 class Message extends Component {
 
@@ -13,20 +13,18 @@ class Message extends Component {
           return (
             <div className="message">
               <span className="message-username" style={{color: this.props.messageData.color}}>{this.props.messageData.username}</span>
-              <span className="message-content">{this.props.messageData.content}</span>
-              <img src={this.props.messageData.url}/>
+              <img className="message-image" src={this.props.messageData.url}/>
             </div>
           );
 
         } else {
-
           return (
             <div className="message">
               <span className="message-username" style={{color: this.props.messageData.color}}>{this.props.messageData.username}</span>
               <span className="message-content">{this.props.messageData.content}</span>
             </div>
           );
-        }
+        };
         break;
 
       case "incomingRoom":
@@ -67,6 +65,7 @@ class Message extends Component {
             {this.props.messageData.username} has logged in
           </div>
         );
+        break;
 
       case "incomingLogout":
         return (
@@ -74,6 +73,7 @@ class Message extends Component {
             {this.props.messageData.username} has logged out
           </div>
         );
+        break;
     };
   };
 };
