@@ -1,7 +1,7 @@
 # Chatty App
 
 A simple client side SPA Slack clone built with ReactJS.
-Users are about to chat with each other, change their names, post pictures and change chat rooms
+Users are able to chat with each other, change their names, post pictures and change chat rooms
 
 
 ## Final Product ver 1.1.0
@@ -10,8 +10,8 @@ Users are about to chat with each other, change their names, post pictures and c
 - ver 1.0.0
   - Basic chatty app completed
 
-!["Chatty app base interface"](https://github.com/AaLai/tweeter/blob/master/public/images/NewTweet.png?raw=true)
-!["Example of room functionality"](https://github.com/AaLai/tweeter/blob/master/public/images/TweetDisplay.png?raw=true)
+!["Chatty app base interface"](https://github.com/AaLai/Chatty-App/blob/master/images/Basic_App_view.png?raw=true)
+!["Example of room functionality"](https://github.com/AaLai/Chatty-App/blob/master/images/Multiple_rooms.png?raw=true)
 
 ## Dependencies
 
